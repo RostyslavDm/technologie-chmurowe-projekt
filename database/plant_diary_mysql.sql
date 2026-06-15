@@ -175,4 +175,36 @@ INSERT INTO plant_types (name, description, watering_interval_days, is_active) V
                                                                                    ('Cactus',    'Desert plants requiring minimal watering.',            21, 1),
                                                                                    ('Fern',      'Shade-loving plants needing consistent moisture.',      2, 1);
 
+-- ============================================================
+-- Seed data — demo accounts, plants and care logs
+-- (so a freshly created database already has something to show)
+-- Password for ALL accounts below: Admin12345
+-- ============================================================
+INSERT INTO users (id, nickname, password, email) VALUES
+    (1, 'admin', '$2y$10$N7hEtzLIXIcUjRJZL9NCguCt50RGNIQZi7RbR3QLP3135FRvM6smO', 'admin@plantcare.app'),
+    (2, 'anna',  '$2y$10$N7hEtzLIXIcUjRJZL9NCguCt50RGNIQZi7RbR3QLP3135FRvM6smO', 'anna@plantcare.app'),
+    (3, 'piotr', '$2y$10$N7hEtzLIXIcUjRJZL9NCguCt50RGNIQZi7RbR3QLP3135FRvM6smO', 'piotr@plantcare.app'),
+    (4, 'zofia', '$2y$10$N7hEtzLIXIcUjRJZL9NCguCt50RGNIQZi7RbR3QLP3135FRvM6smO', 'zofia@plantcare.app');
+
+INSERT INTO user_roles (user_id, role_id) VALUES
+    (1, 3),   -- admin -> admin
+    (2, 2),   -- anna  -> user
+    (3, 2),   -- piotr -> user
+    (4, 2);   -- zofia -> user
+
+INSERT INTO plants (id, user_id, plant_type_id, name, notes) VALUES
+    (1, 2, 2, 'Monstera w salonie', 'Duza roslina przy oknie.'),
+    (2, 2, 1, 'Sukulent na biurku', NULL),
+    (3, 3, 4, 'Kaktus Bartek',      'Prezent od mamy.'),
+    (4, 3, 3, 'Bazylia w kuchni',   'Do gotowania.'),
+    (5, 4, 5, 'Paproc w lazience',  'Lubi wilgoc.');
+
+INSERT INTO care_logs (plant_id, action, notes) VALUES
+    (1, 'watering',    'Podlana rano.'),
+    (1, 'watering',    'Druga porcja wody.'),
+    (1, 'fertilising', 'Nawoz plynny.'),
+    (4, 'watering',    'Podlana.'),
+    (4, 'pruning',     'Przyciete listki.'),
+    (5, 'watering',    'Lekko zroszona.');
+
 COMMIT;

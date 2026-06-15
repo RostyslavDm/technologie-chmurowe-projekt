@@ -1,13 +1,23 @@
+# Wdrozenie 2 mikrouslug przez docker compose (uruchamiane na maszynie wirtualnej Azure).
+# app  = aplikacja Laravel (nginx + php-fpm)
+# db   = osobny kontener bazy MySQL
+# Oba kontenery komunikuja sie po sieci docker compose (app laczy sie z baza po nazwie "db").
+#
+# Uwaga: ta maszyna serwuje zwykle HTTP, dlatego APP_ENV=local (wylacza wymuszanie https).
+# Wersja z HTTPS dziala na Azure App Service (osobne wdrozenie).
+
 services:
   app:                                   # 1. kontener: aplikacja (nginx + php-fpm)
-    build: .                             # buduje obraz z Twojego Dockerfile
+    build: .                             # buduje obraz z Dockerfile
     ports:
       - "80:80"
     environment:
-      APP_ENV: production
+      APP_ENV: local
       APP_DEBUG: "false"
-      APP_KEY: ${APP_KEY}                # z pliku .env (tworzysz go na VM)
+      APP_KEY: ${APP_KEY}                # z pliku .env (tworzony na VM, nie commitowany)
       APP_URL: http://localhost
+      SESSION_DRIVER: file               # sesje w plikach (nie w bazie Laravela)
+      CACHE_STORE: file
       DB_TYPE: mysql                     # przelacza Database.php na MySQL
       DB_HOST: db                        # nazwa serwisu ponizej = adres bazy w sieci
       DB_DATABASE: plant_diary
