@@ -30,8 +30,14 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-di
 # zbudowany frontend z Etapu 1
 COPY --from=assets /app/public/build /app/public/build
 
-# uprawnienia dla katalogów, do których Laravel zapisuje
+# baza SQLite wbudowana w obraz (nie trzeba osobnego serwera bazy na Azure)
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends sqlite3 \
+ && rm -rf /var/lib/apt/lists/* \
+ && sqlite3 /app/database/plant_diary.sqlite < /app/database/plant_diary_sqlite.sql
+
+# uprawnienia dla katalogów, do których Laravel/aplikacja zapisuje
 RUN chown -R application:application /app \
- && chmod -R 775 storage bootstrap/cache
+ && chmod -R 775 storage bootstrap/cache database
 
 EXPOSE 80
