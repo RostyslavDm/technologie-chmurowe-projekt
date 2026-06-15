@@ -1,4 +1,4 @@
-name: Build and push image to ACR
+name: CI/CD — testy, build obrazu i push do ACR
 
 # Uruchom przy każdym push na main + przycisk do ręcznego odpalenia
 on:
@@ -7,7 +7,34 @@ on:
   workflow_dispatch:
 
 jobs:
+  # 1) Bramka jakości — build rusza tylko, gdy testy przejdą.
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pobierz kod
+        uses: actions/checkout@v4
+
+      - name: Ustaw PHP 8.2
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: pdo, pdo_sqlite, sqlite3, mbstring, dom, xml, bcmath
+          coverage: none
+
+      - name: Zainstaluj zależności (Composer)
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Przygotuj środowisko testowe
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Uruchom testy (PHPUnit)
+        run: php artisan test
+
+  # 2) Build obrazu Dockera i push do Azure Container Registry
   build-and-push:
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - name: Pobierz kod
