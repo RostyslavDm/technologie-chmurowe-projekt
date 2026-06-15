@@ -23,12 +23,41 @@ class Database {
                     'charset' => 'utf8mb4',
                 ]);
             } else {
+                // Sciezka bazy SQLite. Na Azure ustawiamy ja na /home/... (trwale po restarcie).
+                $path = env('DB_DATABASE', database_path('plant_diary.sqlite'));
+                if (!self::prepareSqlite($path)) {
+                    // awaryjnie: baza wbudowana w obraz (apka dziala, ale dane znikaja po restarcie)
+                    $path = database_path('plant_diary.sqlite');
+                }
                 self::$instance = new Medoo([
                     'type' => 'sqlite',
-                    'database' => env('DB_DATABASE', database_path('plant_diary.sqlite')),
+                    'database' => $path,
                 ]);
             }
         }
         return self::$instance;
+    }
+
+    // Upewnia sie, ze plik bazy SQLite istnieje i ma utworzone tabele.
+    // Gdy go brak (np. pierwszy start na trwalym dysku /home) - tworzy go ze schematu.
+    private static function prepareSqlite(string $path): bool {
+        try {
+            if (is_file($path) && filesize($path) > 0) {
+                return true;
+            }
+            $dir = dirname($path);
+            if (!is_dir($dir) && !@mkdir($dir, 0775, true)) {
+                return false;
+            }
+            $schema = base_path('database/plant_diary_sqlite.sql');
+            if (!is_file($schema)) {
+                return false;
+            }
+            $pdo = new \PDO('sqlite:' . $path);
+            $pdo->exec(file_get_contents($schema));
+            return true;
+        } catch (\Throwable $e) {
+            return false;
+        }
     }
 }
