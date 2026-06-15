@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -11,6 +12,19 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        
+        // Azure App Service konczy HTTPS na wejsciu i przekazuje ruch do kontenera
+        // jako HTTP. Ufamy naglowkom proxy (X-Forwarded-Proto itp.), zeby Laravel
+        // wiedzial, ze polaczenie jest bezpieczne -> poprawne linki https + dziala CSRF.
+        $middleware->trustProxies(at: '*', headers:
+            Request::HEADER_X_FORWARDED_FOR |
+            Request::HEADER_X_FORWARDED_HOST |
+            Request::HEADER_X_FORWARDED_PORT |
+            Request::HEADER_X_FORWARDED_PROTO |
+            Request::HEADER_X_FORWARDED_AWS_ELB
+        );
+
+    
         $middleware->alias([
             'checklogin' => \App\Http\Middleware\CheckLogin::class,
             'checkadmin' => \App\Http\Middleware\CheckAdmin::class,
